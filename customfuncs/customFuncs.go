@@ -1,6 +1,11 @@
 package customfuncs
 
 import (
+	"bytes"
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"encoding/hex"
 	"strings"
 
 	"github.com/google/uuid"
@@ -26,6 +31,12 @@ func Merge(funcs ...CustomFuncs) CustomFuncs {
 	return merged
 }
 
+func PKCS7Padding(data []byte, blockSize int) []byte {
+	padding := blockSize - len(data)%blockSize
+	padText := bytes.Repeat([]byte{byte(padding)}, padding)
+	return append(data, padText...)
+}
+
 // CommonCustomFuncs contains the most basic and frequently-used custom functions that are suitable
 // for all versions of schemas.
 var CommonCustomFuncs = map[string]CustomFuncType{
@@ -40,6 +51,9 @@ var CommonCustomFuncs = map[string]CustomFuncType{
 	"now":                     Now,
 	"upper":                   Upper,
 	"uuidv3":                  UUIDv3,
+	"uuidv4":                  UUIDv4,
+	"encryptAesEcb":           EncryptAESECB,
+	"encryptAesGcm":           EncryptAESGCM,
 }
 
 // Coalesce returns the first non-empty string of the input strings. If no input strings are given or
@@ -76,4 +90,49 @@ func Upper(_ *transformctx.Ctx, s string) (string, error) {
 // UUIDv3 uses MD5 to produce a consistent/stable UUID for an input string.
 func UUIDv3(_ *transformctx.Ctx, s string) (string, error) {
 	return uuid.NewMD5(uuid.Nil, []byte(s)).String(), nil
+}
+
+// Generates an UUID.
+func UUIDv4(_ *transformctx.Ctx) (string, error) {
+	return uuid.New().String(), nil
+}
+
+// Apply AES ECB encryption for an input string
+func EncryptAESECB(_ *transformctx.Ctx, key string, s string) (string, error) {
+	block, err := aes.NewCipher([]byte(key))
+	if err != nil {
+		return "", err
+	}
+
+	blockSize := block.BlockSize()
+	plaintext := PKCS7Padding([]byte(s), blockSize)
+
+	ciphertext := make([]byte, len(plaintext))
+	for i := 0; i < len(plaintext); i += blockSize {
+		block.Encrypt(ciphertext[i:i+blockSize], plaintext[i:i+blockSize])
+	}
+	encodedCiphertext := hex.EncodeToString(ciphertext)
+
+	return encodedCiphertext, nil
+}
+
+// Apply AES GCM encryption for an input string
+func EncryptAESGCM(_ *transformctx.Ctx, key string, s string) (string, error) {
+	block, err := aes.NewCipher([]byte(key))
+	if err != nil {
+		return "", err
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return "", err
+	}
+	nonce := make([]byte, gcm.NonceSize())
+	_, err = rand.Read(nonce)
+	if err != nil {
+		return "", err
+	}
+	ciphertext := gcm.Seal(nonce, nonce, []byte(s), nil)
+	encodedCiphertext := hex.EncodeToString(ciphertext)
+
+	return encodedCiphertext, nil
 }
