@@ -98,7 +98,13 @@ func (d *SegDecl) matchSegName(segName string) bool {
 		//    "...loop is optional, but if any segment in the loop is used, the first segment
 		//    within the loop becomes mandatory..."
 		//  - https://github.com/smooks/smooks-edi-cartridge/blob/54f97e89156114e13e1acd3b3c46fe9a4234918c/edi-sax/src/main/java/org/smooks/edi/edisax/model/internal/SegmentGroup.java#L68
-		return len(d.Children) > 0 && d.Children[0].matchSegName(segName)
+		segExists := false
+		for _, child := range d.Children {
+			if child.matchSegName(segName) {
+				segExists = true
+			}
+		}
+		return len(d.Children) > 0 && segExists
 	default:
 		return d.Name == segName
 	}
