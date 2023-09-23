@@ -32,6 +32,7 @@ var (
 	schema string
 	input  string
 	stream bool
+	external map[string]string
 )
 
 func init() {
@@ -42,6 +43,8 @@ func init() {
 		&input, "input", "i", "", "input file (optional; if not specified, stdin/pipe is used)")
 	transformCmd.Flags().BoolVarP(
 		&stream, "stream", "", false, "if specified, each record will be a standalone/full JSON blob and printed out immediately once transform is done")
+	transformCmd.Flags().StringToStringVarP(
+		&external, "external", "e", nil, "external values (optional)")
 }
 
 func openFile(label string, filepath string) (io.ReadCloser, error) {
@@ -79,7 +82,7 @@ func doTransform() error {
 		return err
 	}
 
-	transform, err := schema.NewTransform(inputName, inputReadCloser, &transformctx.Ctx{})
+	transform, err := schema.NewTransform(inputName, inputReadCloser, &transformctx.Ctx{ExternalProperties: external})
 	if err != nil {
 		return err
 	}
