@@ -40,7 +40,8 @@ type Elem struct {
 
 func (e Elem) compIndex() int {
 	if e.CompIndex == nil {
-		return 1
+		// return 1
+		return 0
 	}
 	return *e.CompIndex
 }

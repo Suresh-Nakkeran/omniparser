@@ -178,18 +178,17 @@ func (r *NonValidatingReader) readToken(token []byte, rawSeg *RawSeg) error {
 			elemVals = [][]byte{elem}
 		}
 		for _, elemVal := range elemVals {
+			rawSeg.Elems = append(
+				rawSeg.Elems,
+				RawSegElem{
+					// while (element) index in schema starts with 1, it actually refers to the first element
+					// AFTER the seg name element, thus we can use i as ElemIndex directly.
+					ElemIndex: i,
+					// comp_index always starts with 0 which has the entire element as one component.
+					CompIndex: 0,
+					Data:      elemVal,
+				})
 			if len(r.compDelim.b) == 0 {
-				// if we don't have comp delimiter, treat the entire element as one component.
-				rawSeg.Elems = append(
-					rawSeg.Elems,
-					RawSegElem{
-						// while (element) index in schema starts with 1, it actually refers to the first element
-						// AFTER the seg name element, thus we can use i as ElemIndex directly.
-						ElemIndex: i,
-						// comp_index always starts with 1
-						CompIndex: 1,
-						Data:      elemVal,
-					})
 				continue
 			}
 			for j, comp := range strs.ByteSplitWithEsc(elemVal, r.compDelim.b, r.releaseChar.b, defaultCompsPerElem) {
@@ -201,6 +200,29 @@ func (r *NonValidatingReader) readToken(token []byte, rawSeg *RawSeg) error {
 						Data:      comp,
 					})
 			}
+			// if len(r.compDelim.b) == 0 {
+			// 	// if we don't have comp delimiter, treat the entire element as one component.
+			// 	rawSeg.Elems = append(
+			// 		rawSeg.Elems,
+			// 		RawSegElem{
+			// 			// while (element) index in schema starts with 1, it actually refers to the first element
+			// 			// AFTER the seg name element, thus we can use i as ElemIndex directly.
+			// 			ElemIndex: i,
+			// 			// comp_index always starts with 1
+			// 			CompIndex: 1,
+			// 			Data:      elemVal,
+			// 		})
+			// 	continue
+			// }
+			// for j, comp := range strs.ByteSplitWithEsc(elemVal, r.compDelim.b, r.releaseChar.b, defaultCompsPerElem) {
+			// 	rawSeg.Elems = append(
+			// 		rawSeg.Elems,
+			// 		RawSegElem{
+			// 			ElemIndex: i,
+			// 			CompIndex: j + 1,
+			// 			Data:      comp,
+			// 		})
+			// }
 		}
 	}
 	if len(rawSeg.Elems) == 0 || len(rawSeg.Elems[0].Data) == 0 {
