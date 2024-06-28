@@ -97,6 +97,11 @@ type Decl struct {
 	NoTrim bool `json:"no_trim,omitempty"`
 	// KeepEmptyOrNull specifies whether to keep an empty/null output or not.
 	KeepEmptyOrNull bool `json:"keep_empty_or_null,omitempty"`
+	// Mandatory specifies to check whether a value exists.
+	// Return an error if the value does not exist.
+	Mandatory bool `json:"mandatory,omitempty"`
+	// Default specifies the default value of element.
+	Default *string `json:"default,omitempty"`
 
 	// Internal fields are computed at schema loading time.
 	fqdn     string
@@ -194,5 +199,7 @@ func (d *Decl) deepCopy() *Decl {
 	}
 	dest.NoTrim = d.NoTrim
 	dest.KeepEmptyOrNull = d.KeepEmptyOrNull
+	dest.Mandatory = d.Mandatory
+	dest.Default = strs.CopyStrPtr(d.Default)
 	return dest
 }

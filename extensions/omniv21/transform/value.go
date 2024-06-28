@@ -81,11 +81,31 @@ func resultTypeConversion(v interface{}, resultType resultType) (interface{}, er
 	return nil, errTypeConversionNotSupported
 }
 
+// func checkNullValue(vv string) bool {
+// 	fmt.Println(vv)
+// 	nullValues := []string{"null", "none", "nil"}
+// 	set := make(map[string]struct{}, len(nullValues))
+// 	for _, s := range nullValues {
+// 		set[s] = struct{}{}
+// 	}
+// 	_, ok := set[strings.ToLower(vv)]
+// 	return ok
+// }
+
 func normalizeAndSaveValue(decl *Decl, v interface{}, save func(interface{})) error {
 	vv := reflect.ValueOf(v)
 	if vv.Kind() == reflect.String && !decl.NoTrim {
 		v = strings.TrimSpace(v.(string))
 		vv = reflect.ValueOf(v)
+	}
+	// if value is nil replace with default value
+	// if (v == nil || checkNullValue(vv.String())) && decl.Default != nil {
+	if v == nil && decl.Default != nil {
+		if decl.ResultType != nil {
+			v, _ = resultTypeConversion(*decl.Default, *decl.ResultType)
+		} else {
+			v, _ = resultTypeConversion(*decl.Default, resultTypeString)
+		}
 	}
 	checkToSave := func(v interface{}) {
 		if v != nil && !isEmpty(v) {
@@ -101,6 +121,9 @@ func normalizeAndSaveValue(decl *Decl, v interface{}, save func(interface{})) er
 		}
 		save(v)
 		return
+	}
+	if (v == nil || isEmpty(v)) && decl.Mandatory {
+		return fmt.Errorf("value for the mandatory field '%s' is missing", decl.fqdn)
 	}
 	if v == nil || decl.ResultType == nil {
 		checkToSave(v)

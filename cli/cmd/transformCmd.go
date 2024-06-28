@@ -28,6 +28,7 @@ var (
 			}
 			return nil
 		},
+		SilenceUsage: true,
 	}
 	schema string
 	input  string

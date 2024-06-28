@@ -51,6 +51,12 @@ const (
         "value_no_trim": { "type": "boolean" },
         "value_ignore_error": { "type": "boolean" },
         "value_keep_empty_or_null": { "type": "boolean" },
+        "value_mandatory": { "type": "boolean" },
+        "value_default": {
+            "type": "string",
+            "minLength": 1,
+            "$comment": "default can not be empty string"
+        },
         "value_name": {
             "type": "string",
             "minLength": 1,
@@ -177,6 +183,8 @@ const (
                 "type": { "$ref": "#/definitions/value_type" },
                 "no_trim": { "$ref": "#/definitions/value_no_trim" },
                 "keep_empty_or_null": { "$ref": "#/definitions/value_keep_empty_or_null" },
+                "mandatory": { "$ref": "#/definitions/value_mandatory" },
+                "default": { "$ref": "#/definitions/value_default" },
                 "_comment": { "$ref": "#/definitions/value_comment" }
             },
             "additionalProperties": false
@@ -237,6 +245,8 @@ const (
                 "type": { "$ref": "#/definitions/value_type" },
                 "no_trim": { "$ref": "#/definitions/value_no_trim" },
                 "keep_empty_or_null": { "$ref": "#/definitions/value_keep_empty_or_null" },
+                "mandatory": { "$ref": "#/definitions/value_mandatory" },
+                "default": { "$ref": "#/definitions/value_default" },
                 "_comment": { "$ref": "#/definitions/value_comment" }
             },
             "required": [ "custom_func" ],
@@ -251,6 +261,8 @@ const (
                 "type": { "$ref": "#/definitions/value_type" },
                 "no_trim": { "$ref": "#/definitions/value_no_trim" },
                 "keep_empty_or_null": { "$ref": "#/definitions/value_keep_empty_or_null" },
+                "mandatory": { "$ref": "#/definitions/value_mandatory" },
+                "default": { "$ref": "#/definitions/value_default" },
                 "_comment": { "$ref": "#/definitions/value_comment" }
             },
             "required": [ "custom_parse" ],

@@ -210,9 +210,12 @@ func (p *parseCtx) parseObject(n *idr.Node, decl *Decl) (interface{}, error) {
 		}
 		// value returned by p.ParseNode is already normalized, thus this
 		// normalizeAndSaveValue won't fail.
-		_ = normalizeAndSaveValue(childDecl, childValue, func(normalizedValue interface{}) {
+		err = normalizeAndSaveValue(childDecl, childValue, func(normalizedValue interface{}) {
 			obj[strs.LastNameletOfFQDNWithEsc(childDecl.fqdn)] = normalizedValue
 		})
+		if err != nil {
+			return nil, err
+		}
 	}
 	return normalizeAndReturnValue(decl, obj)
 }
@@ -242,9 +245,12 @@ func (p *parseCtx) parseArray(n *idr.Node, decl *Decl) (interface{}, error) {
 			}
 			// value returned by p.ParseNode is already normalized, thus this
 			// normalizeAndSaveValue won't fail.
-			_ = normalizeAndSaveValue(childDecl, childValue, func(normalizedValue interface{}) {
+			err = normalizeAndSaveValue(childDecl, childValue, func(normalizedValue interface{}) {
 				array = append(array, normalizedValue)
 			})
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 	return normalizeAndReturnValue(decl, array)
